@@ -1,0 +1,15 @@
+# Builder stage
+FROM node:lts-alpine3.19 AS builder
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+WORKDIR /react-app/
+COPY package.json .
+RUN pnpm install
+COPY . .
+RUN pnpm run build
+
+# Running application
+FROM nginx:1.27.2-alpine-slim
+COPY --from=builder /react-app/dist /usr/share/nginx/html
+CMD ["nginx", "-g", "daemon off;"]
